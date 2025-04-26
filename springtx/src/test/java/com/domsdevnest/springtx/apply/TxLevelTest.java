@@ -10,48 +10,48 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 @SpringBootTest
-public class TxBasicTest {
+public class TxLevelTest {
 
     @Autowired
-    BasicService basicService;
-
-    @Test
-    void proxyCheck() {
-        log.info("aop class={}", basicService.getClass());
-        assertThat(AopUtils.isAopProxy(basicService)).isTrue();
-    }
+    LevelService service;
 
     @Test
     void txTest() {
-        basicService.tx();
-        basicService.nonTx();
+        service.write();
+        service.read();
     }
 
     @TestConfiguration
-    static class TxApplyBasicConfig {
+    static class TxApplyLevelConfig {
         @Bean
-        BasicService basicService() {
-            return new BasicService();
+        LevelService levelService() {
+            return new LevelService();
         }
     }
 
     @Slf4j
-    static class BasicService {
-        @Transactional
-        public void tx() {
-            log.info("call tx");
-            boolean txActive = TransactionSynchronizationManager.isActualTransactionActive();
-            log.info("tx active={}",txActive);
+    @Transactional(readOnly = true)
+    static class LevelService {
+        @Transactional(readOnly = false)
+        public void write() {
+            log.info("call write");
+            printTxInfo();
         }
 
-        public void nonTx() {
-            log.info("call nonTx");
+        public void read() {
+            log.info("call read");
+            printTxInfo();
+        }
+
+        private void printTxInfo() {
             boolean txActive = TransactionSynchronizationManager.isActualTransactionActive();
-            log.info("nonTx active={}",txActive);
+            log.info("tx active={}", txActive);
+            boolean readOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
+            log.info("rx readonly={}", readOnly);
         }
     }
 }
