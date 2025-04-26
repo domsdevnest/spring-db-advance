@@ -1,6 +1,7 @@
 package hello.itemservice.domain;
 
 import lombok.Data;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.persistence.*;
 
@@ -25,3 +26,5 @@ public class Item {
         this.quantity = quantity;
     }
 }
+
+PlatformTransactionManager
